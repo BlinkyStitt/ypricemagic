@@ -91,4 +91,8 @@ jobs:
           FTMSCAN_TOKEN: ${{ secrets.FTMSCAN_TOKEN }}
         run: make test
         continue-on-error: true
-      
+
+# Superseded PR validation must not hold runner capacity.
+concurrency:
+  group: pr-ci-pytest.yaml-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
