@@ -2,7 +2,7 @@ name: PyTest
 
 on:
   push:
-    branch: dev
+    branches: dev
     paths:
       - '**.py'
       - '**/pytest.yaml'
@@ -15,7 +15,7 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && 'ubuntu-22.04' || matrix.os == 'macos-latest' && 'macos-15-intel' || matrix.os }}
     #timeout-minutes: 10
     strategy:
       matrix:
@@ -40,22 +40,22 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup Python (faster than using Python container)
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.9"
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-dev.txt') }}
           path: |
             ${{ matrix.path }}
       
       - name: Cache joblib middleware cache
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           # Include requirements.txt so we recache if web3 version changes
           key: forceupdatedeletethislater3-${{ runner.os }}-${{ matrix.network }}-${{ hashFiles('**/middleware.py') }}-${{ hashFiles('**/requirements.txt') }}
@@ -73,7 +73,7 @@ jobs:
         continue-on-error: true
 
       - name: Cache compilers and brownie deployments
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           key: forceupdatedeletethislater3-${{ runner.os }}-brownie-cache-${{ matrix.network }}
           path: |
