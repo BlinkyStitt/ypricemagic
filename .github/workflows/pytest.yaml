@@ -84,10 +84,16 @@ jobs:
         pip install -r requirements-dev.txt
         pip install -r requirements.txt
     - name: Setup brownie networks
-      run: 'brownie networks modify ${{ matrix.network }} host=${{ secrets[matrix.provider] }}
-
-        '
-      continue-on-error: true
+      env:
+        BROWNIE_NETWORK_ID: "${{ matrix.network }}"
+        RPC_PROVIDER: "${{ secrets[matrix.provider] }}"
+      shell: bash
+      run: |
+        if [ -z "$RPC_PROVIDER" ]; then
+          echo '::error::Configure the RPC provider secret selected by this network matrix before running integration tests.'
+          exit 1
+        fi
+        brownie networks modify "$BROWNIE_NETWORK_ID" "host=$RPC_PROVIDER"
     - name: Cache compilers and brownie deployments
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
       with:
@@ -99,17 +105,17 @@ jobs:
     - name: Run test suite
       env:
         BROWNIE_NETWORK: "${{ matrix.network }}"
+        BROWNIE_NETWORK_ID: "${{ matrix.network }}"
         ETHERSCAN_TOKEN: "${{ secrets.ETHERSCAN_TOKEN }}"
         BSCSCAN_TOKEN: "${{ secrets.BSCSCAN_TOKEN }}"
         POLYGONSCAN_TOKEN: "${{ secrets.POLYGONSCAN_TOKEN }}"
         FTMSCAN_TOKEN: "${{ secrets.FTMSCAN_TOKEN }}"
       run: make test
-      continue-on-error: true
     needs:
     - ci_changes
     if: "${{ needs.ci_changes.outputs.run_validation == 'true' }}"
   ci_gate:
-    name: CI (pytest.yaml)
+    name: Integration tests
     if: "${{ !cancelled() }}"
     needs:
     - ci_changes
