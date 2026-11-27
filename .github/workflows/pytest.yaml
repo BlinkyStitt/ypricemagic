@@ -115,7 +115,7 @@ jobs:
     - ci_changes
     if: "${{ needs.ci_changes.outputs.run_validation == 'true' }}"
   ci_gate:
-    name: CI (pytest.yaml)
+    name: Integration tests
     if: "${{ !cancelled() }}"
     needs:
     - ci_changes
